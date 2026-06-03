@@ -5,6 +5,9 @@ import time
 from typing import Optional
 from app.schemas import ApiResponseData
 
+# 响应体最大大小 (5MB)，超过此值时返回截断内容
+MAX_RESPONSE_SIZE = 5 * 1024 * 1024
+
 
 async def send_request(
     method: str,
@@ -68,12 +71,29 @@ async def send_request(
             # 计算耗时
             duration = int((time.time() - start_time) * 1000)
 
-            # 获取响应体
-            body_text = response.text
-            body_size = len(response.content)
-
             # 获取 Content-Type
             content_type = response.headers.get("content-type", "")
+
+            # 获取响应体（限制大小）
+            body_bytes = response.content
+            body_size = len(body_bytes)
+
+            if body_size > MAX_RESPONSE_SIZE:
+                body_text = f"响应体过大（{body_size} 字节），已省略正文展示。最大限制: {MAX_RESPONSE_SIZE} 字节。"
+            else:
+                # 对文本类型尝试解码为字符串
+                if "text/" in content_type or "json" in content_type or "xml" in content_type or "javascript" in content_type:
+                    enc = response.encoding or "utf-8"
+                    try:
+                        body_text = body_bytes.decode(enc, errors="replace")
+                    except Exception:
+                        body_text = body_bytes.decode("utf-8", errors="replace")
+                elif content_type.startswith("image/"):
+                    # 图片响应转为 base64
+                    import base64
+                    body_text = base64.b64encode(body_bytes).decode("ascii")
+                else:
+                    body_text = body_bytes.decode("utf-8", errors="replace")
 
             return ApiResponseData(
                 status_code=response.status_code,

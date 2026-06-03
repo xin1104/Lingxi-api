@@ -9,6 +9,7 @@ import { ParamsEditor } from './ParamsEditor'
 import { HeadersEditor } from './HeadersEditor'
 import { AuthEditor } from './AuthEditor'
 import { BodyEditor } from './BodyEditor'
+import { CodeEditor } from '@/shared/ui/CodeEditor'
 import * as api from '@/shared/api'
 
 const HTTP_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS']
@@ -45,6 +46,8 @@ export function RequestEditor() {
     { key: 'headers', label: '请求头' },
     { key: 'auth', label: '认证' },
     { key: 'body', label: '请求体' },
+    { key: 'pre_script', label: 'Pre Script' },
+    { key: 'tests', label: 'Tests' },
   ]
 
   const previewUrl = currentRequest.url.replace(/\{\{(.+?)\}\}/g, (_match, varName) => {
@@ -272,6 +275,36 @@ export function RequestEditor() {
               body={currentRequest.body}
               onChange={setBody}
             />
+          )}
+          {activeTab === 'pre_script' && (
+            <div className="p-4">
+              <p className="text-xs text-dark-text-secondary mb-2">
+                Pre Script — 请求发送前执行的脚本（Demo 暂未实现完整沙箱，脚本仅供参考）
+              </p>
+              <CodeEditor
+                value={currentRequest.preScript || ''}
+                onChange={(v) => useAppStore.setState((s) => ({
+                  currentRequest: { ...s.currentRequest, preScript: v || '' }
+                }))}
+                language="javascript"
+                height="200px"
+              />
+            </div>
+          )}
+          {activeTab === 'tests' && (
+            <div className="p-4">
+              <p className="text-xs text-dark-text-secondary mb-2">
+                Tests — 响应返回后执行的测试断言（Demo 级安全实现）
+              </p>
+              <CodeEditor
+                value={currentRequest.testScript || ''}
+                onChange={(v) => useAppStore.setState((s) => ({
+                  currentRequest: { ...s.currentRequest, testScript: v || '' }
+                }))}
+                language="javascript"
+                height="200px"
+              />
+            </div>
           )}
         </div>
       </div>

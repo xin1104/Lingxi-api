@@ -2,7 +2,7 @@
 
 > 本地优先、中文友好、开箱即用的中文 API 调试客户端
 
-[![CI](https://github.com/yourname/Lingxi-api/actions/workflows/ci.yml/badge.svg)](https://github.com/yourname/Lingxi-api/actions/workflows/ci.yml)
+[![CI](https://github.com/xin1104/Lingxi-api/actions/workflows/ci.yml/badge.svg)](https://github.com/xin1104/Lingxi-api/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/Python-3.11+-blue)](https://www.python.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green)](https://nodejs.org/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -34,8 +34,11 @@
 | 请求捕获 | 已完成 | 捕获本软件发出的所有请求 |
 | 应用设置 | 已完成 | 主题 / 超时 / 代理等 |
 | 数据备份 | 已完成 | 完整 JSON 导出 |
-| Pre Script / Tests | TODO | 计划 v0.2 |
-| Monaco Editor | TODO | 计划 v0.2 |
+| Pre Script 编辑 | 已完成 | Monaco Editor (javascript 模式) |
+| Tests 断言 | 已完成 | 安全 DSL: status/json/headers 断言 + 结果展示 |
+| Cookies 面板 | 已完成 | Set-Cookie 解析 + 属性展示 |
+| 图片响应预览 | 已完成 | image/png/jpeg/gif/webp/svg 预览 |
+| Monaco Editor | 已完成 | JSON / raw / Script 编辑器 |
 | HTTP 代理抓包 | TODO | 计划 v0.4 |
 
 ## 架构
@@ -258,25 +261,26 @@ npm run typecheck
 npm run build
 ```
 
-## Demo 暂未实现
+## Demo 暂未实现 (TODO)
 
-以下功能 UI 中已有入口但标注为 TODO，不会伪造行为：
+以下功能在 UI 中有入口但标注为 Demo TODO：
 
 | 功能 | 计划 |
 |------|------|
-| Pre Script 脚本 | v0.2 |
-| Tests 断言 | v0.2 |
-| Monaco Editor | v0.2 |
-| Cookies 面板 | v0.2 |
+| Pre Script 真实执行 | v0.3 (编辑已有 Monaco) |
 | HTTP 代理抓包 | v0.4 |
-| WebSocket | TBD |
-| GraphQL | TBD |
+| WebSocket 调试 | TBD |
+| GraphQL 调试 | TBD |
 | 桌面打包 | v1.0 |
+
+## Tests 安全说明
+
+当前 Tests 系统使用 Function 构造器在受限作用域中执行脚本，仅暴露 `test`/`expect`/`response` API。**不暴露** window、document、localStorage、fetch、XMLHttpRequest 等危险对象。这是 Demo 级安全实现，仅供个人开发者日常 API 测试使用。
 
 ## 路线图
 
-- **v0.2** — Monaco Editor、Pre Script/Tests 脚本、Cookies 面板、图片预览
-- **v0.3** — WebSocket 调试
+- **v0.2** — Monaco Editor、Tests 断言、Cookies 面板、图片预览 (已完成)
+- **v0.3** — Pre Script 执行、WebSocket 调试
 - **v0.4** — 基础 HTTP 代理抓包
 - **v1.0** — 桌面应用打包 (PyInstaller / Electron)
 

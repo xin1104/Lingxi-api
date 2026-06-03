@@ -1,20 +1,105 @@
 // 响应查看器
 
-import React, { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useAppStore } from '@/shared/store'
-import { cn, formatSize, formatDuration, getStatusColor, formatJson, copyToClipboard } from '@/shared/utils'
+import { cn, formatSize, formatDuration, getStatusColor, copyToClipboard } from '@/shared/utils'
 import { Tabs, EmptyState } from '@/shared/ui'
-import { Copy, Download, Check } from 'lucide-react'
+import { Copy, Check, CheckCircle, XCircle } from 'lucide-react'
+import { runTests } from '@/shared/utils/testRunner'
+
+// 解析 Set-Cookie 头
+function parseCookies(headers: Record<string, string>) {
+  const cookies: Array<Record<string, string>> = []
+  const setCookie = headers['set-cookie'] || headers['Set-Cookie']
+  if (!setCookie) return cookies
+
+  // 简单解析 Set-Cookie，容错处理
+  const parts = setCookie.split(',')
+  for (const part of parts) {
+    const trimmed = part.trim()
+    try {
+      const cookie: Record<string, string> = {}
+      const segments = trimmed.split(';')
+      for (let i = 0; i < segments.length; i++) {
+        const seg = segments[i].trim()
+        if (i === 0) {
+          const eqIdx = seg.indexOf('=')
+          if (eqIdx > 0) {
+            cookie.name = seg.substring(0, eqIdx).trim()
+            cookie.value = seg.substring(eqIdx + 1).trim()
+          }
+        } else {
+          const lowerSeg = seg.toLowerCase()
+          if (lowerSeg.startsWith('expires=')) {
+            cookie.expires = seg.substring(8).trim()
+          } else if (lowerSeg.startsWith('max-age=')) {
+            cookie['max-age'] = seg.substring(8).trim()
+          } else if (lowerSeg.startsWith('domain=')) {
+            cookie.domain = seg.substring(7).trim()
+          } else if (lowerSeg.startsWith('path=')) {
+            cookie.path = seg.substring(5).trim()
+          } else if (lowerSeg.startsWith('samesite=')) {
+            cookie.samesite = seg.substring(9).trim()
+          } else if (lowerSeg === 'httponly') {
+            cookie.httponly = 'true'
+          } else if (lowerSeg === 'secure') {
+            cookie.secure = 'true'
+          }
+        }
+      }
+      if (cookie.name) {
+        cookies.push(cookie)
+      }
+    } catch {
+      // 忽略解析失败的 cookie
+    }
+  }
+  return cookies
+}
+
+// 判断是否为图片 content-type
+function isImageContentType(contentType: string): boolean {
+  if (!contentType) return false
+  return /^image\/(png|jpeg|gif|webp|svg\+xml)/i.test(contentType)
+}
+
+// 判断是否为文本类型
+function isTextContentType(contentType: string): boolean {
+  if (!contentType) return true
+  const textTypes = ['text/', 'application/json', 'application/xml', 'application/javascript']
+  return textTypes.some((t) => contentType.startsWith(t))
+}
 
 export function ResponseViewer() {
-  const { response, isLoading } = useAppStore()
+  const { response, isLoading, currentRequest } = useAppStore()
   const [activeTab, setActiveTab] = useState('body')
   const [copied, setCopied] = useState(false)
+
+  // 解析 Cookies
+  const cookies = useMemo(() => {
+    if (!response?.headers) return []
+    return parseCookies(response.headers)
+  }, [response?.headers])
+
+  // 执行 Tests
+  const testResults = useMemo(() => {
+    if (!response || !currentRequest.testScript) return []
+    const ctx = {
+      status: response.status_code,
+      headers: response.headers,
+      body: response.body,
+      json: (() => {
+        try { return JSON.parse(response.body) } catch { return null }
+      })(),
+    }
+    return runTests(currentRequest.testScript, ctx)
+  }, [response, currentRequest.testScript])
 
   const tabs = [
     { key: 'body', label: '响应体' },
     { key: 'headers', label: '响应头' },
     { key: 'cookies', label: 'Cookies' },
+    { key: 'tests', label: testResults.length > 0 ? `测试结果 (${testResults.filter(t => t.passed).length}/${testResults.length})` : '测试结果' },
   ]
 
   const handleCopy = async () => {
@@ -25,7 +110,6 @@ export function ResponseViewer() {
     }
   }
 
-  // 格式化响应体
   const getFormattedBody = () => {
     if (!response?.body) return ''
     try {
@@ -36,7 +120,6 @@ export function ResponseViewer() {
     }
   }
 
-  // 检测是否为 JSON
   const isJson = () => {
     if (!response?.body) return false
     try {
@@ -45,11 +128,6 @@ export function ResponseViewer() {
     } catch {
       return false
     }
-  }
-
-  // 检测是否为图片
-  const isImage = () => {
-    return response?.content_type?.startsWith('image/')
   }
 
   if (isLoading) {
@@ -90,6 +168,9 @@ export function ResponseViewer() {
     )
   }
 
+  const imageType = isImageContentType(response.content_type)
+  const textType = isTextContentType(response.content_type)
+
   return (
     <div className="flex flex-col h-full">
       {/* 状态栏 */}
@@ -97,18 +178,10 @@ export function ResponseViewer() {
         <span className={cn('font-mono font-bold', getStatusColor(response.status_code))}>
           {response.status_code}
         </span>
-        <span className="text-sm text-dark-text-secondary">
-          {formatDuration(response.duration)}
-        </span>
-        <span className="text-sm text-dark-text-secondary">
-          {formatSize(response.body_size)}
-        </span>
-        <span className="text-sm text-dark-text-secondary">
-          {response.content_type}
-        </span>
-
+        <span className="text-sm text-dark-text-secondary">{formatDuration(response.duration)}</span>
+        <span className="text-sm text-dark-text-secondary">{formatSize(response.body_size)}</span>
+        <span className="text-sm text-dark-text-secondary truncate max-w-[200px]">{response.content_type}</span>
         <div className="flex-1" />
-
         <button
           onClick={handleCopy}
           className="flex items-center gap-1 px-2 py-1 text-xs text-dark-text-secondary hover:text-dark-text hover:bg-dark-card rounded"
@@ -125,13 +198,23 @@ export function ResponseViewer() {
       <div className="flex-1 overflow-auto">
         {activeTab === 'body' && (
           <div className="p-4">
-            {isImage() ? (
-              <div className="flex items-center justify-center">
+            {imageType ? (
+              <div className="flex flex-col items-center gap-2">
                 <img
                   src={`data:${response.content_type};base64,${btoa(response.body)}`}
                   alt="响应图片"
-                  className="max-w-full max-h-96"
+                  className="max-w-full max-h-80 rounded border border-dark-border"
+                  onError={() => {}}
                 />
+                <p className="text-xs text-dark-text-secondary">
+                  图片预览（{formatSize(response.body_size)}），可通过上方的"复制"按钮查看原始数据
+                </p>
+              </div>
+            ) : !textType ? (
+              <div className="flex flex-col items-center justify-center py-8 text-dark-text-secondary gap-2">
+                <p className="text-sm">这是二进制响应，当前版本暂不直接展示正文</p>
+                <p className="text-xs">响应大小: {formatSize(response.body_size)}</p>
+                <p className="text-xs">Content-Type: {response.content_type}</p>
               </div>
             ) : (
               <pre
@@ -169,9 +252,89 @@ export function ResponseViewer() {
 
         {activeTab === 'cookies' && (
           <div className="p-4">
-            <p className="text-sm text-dark-text-secondary text-center py-4">
-              Cookies 信息暂未实现
-            </p>
+            {cookies.length === 0 ? (
+              <p className="text-sm text-dark-text-secondary text-center py-8">
+                当前响应没有 Set-Cookie
+              </p>
+            ) : (
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-dark-border">
+                    <th className="text-left py-2 text-dark-text-secondary font-medium">Name</th>
+                    <th className="text-left py-2 text-dark-text-secondary font-medium">Value</th>
+                    <th className="text-left py-2 text-dark-text-secondary font-medium">Domain</th>
+                    <th className="text-left py-2 text-dark-text-secondary font-medium">Path</th>
+                    <th className="text-left py-2 text-dark-text-secondary font-medium">Expires</th>
+                    <th className="text-left py-2 text-dark-text-secondary font-medium">属性</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {cookies.map((c, i) => (
+                    <tr key={i} className="border-b border-dark-border/50">
+                      <td className="py-2 text-dark-text font-mono">{c.name}</td>
+                      <td className="py-2 text-dark-text-secondary font-mono break-all max-w-[150px] truncate">{c.value}</td>
+                      <td className="py-2 text-dark-text-secondary">{c.domain || '-'}</td>
+                      <td className="py-2 text-dark-text-secondary font-mono">{c.path || '/'}</td>
+                      <td className="py-2 text-dark-text-secondary text-xs">{c.expires || c['max-age'] || '-'}</td>
+                      <td className="py-2">
+                        <div className="flex gap-1">
+                          {c.httponly === 'true' && <span className="px-1 text-xs bg-info/20 text-info rounded">HttpOnly</span>}
+                          {c.secure === 'true' && <span className="px-1 text-xs bg-warning/20 text-warning rounded">Secure</span>}
+                          {c.samesite && <span className="px-1 text-xs bg-primary/20 text-primary rounded">{c.samesite}</span>}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'tests' && (
+          <div className="p-4">
+            {!currentRequest.testScript?.trim() ? (
+              <p className="text-sm text-dark-text-secondary text-center py-8">
+                请在请求编辑器的 Tests 面板中编写测试断言，发送请求后将自动执行
+              </p>
+            ) : testResults.length === 0 ? (
+              <p className="text-sm text-dark-text-secondary text-center py-8">
+                测试脚本为空或无法解析，请检查 Tests 面板
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {testResults.map((tr, i) => (
+                  <div
+                    key={i}
+                    className={cn(
+                      'flex items-center gap-3 px-4 py-3 rounded-lg border',
+                      tr.passed
+                        ? 'bg-success/5 border-success/20'
+                        : 'bg-error/5 border-error/20'
+                    )}
+                  >
+                    {tr.passed ? (
+                      <CheckCircle size={16} className="text-success flex-shrink-0" />
+                    ) : (
+                      <XCircle size={16} className="text-error flex-shrink-0" />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className={cn('text-sm', tr.passed ? 'text-dark-text' : 'text-error')}>
+                        {tr.name}
+                      </p>
+                      {!tr.passed && (
+                        <p className="text-xs text-error/80 mt-0.5">{tr.message}</p>
+                      )}
+                    </div>
+                    {tr.duration !== undefined && (
+                      <span className="text-xs text-dark-text-secondary flex-shrink-0">
+                        {tr.duration}ms
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>

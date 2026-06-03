@@ -50,6 +50,8 @@ export interface ApiRequest {
   auth: AuthConfig
   body: RequestBody
   timeout: number
+  preScript: string
+  testScript: string
 }
 
 export interface ApiResponseData {

@@ -115,6 +115,8 @@ const defaultRequest: ApiRequest = {
     binary_path: '',
   },
   timeout: 30,
+  preScript: '',
+  testScript: '',
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -334,6 +336,8 @@ export const useAppStore = create<AppState>((set, get) => ({
         auth: request.auth || defaultRequest.auth,
         body: request.body || defaultRequest.body,
         timeout: 30,
+        preScript: request.pre_script || '',
+        testScript: request.test_script || '',
       },
     })
   },
@@ -350,6 +354,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       body_type: currentRequest.body.type,
       body: currentRequest.body,
       collection_id: collectionId,
+      pre_script: currentRequest.preScript || '',
+      test_script: currentRequest.testScript || '',
     })
     if (result.success) {
       get().loadCollectionRequests(collectionId)

@@ -273,12 +273,18 @@ export async function clearCaptureRecords() {
 
 // ===== 设置 =====
 export async function getSettings() {
-  return fetchApi<AppSettings>('/settings')
+  return fetchApi<AppSettings & { db_path?: string }>('/settings')
 }
 
 export async function updateSettings(data: Partial<AppSettings>) {
   return fetchApi<AppSettings>('/settings', {
     method: 'PUT',
     body: JSON.stringify(data),
+  })
+}
+
+export async function clearAllData() {
+  return fetchApi<void>('/settings/clear-data', {
+    method: 'POST',
   })
 }
