@@ -10,6 +10,9 @@ env/
 .idea/
 # Build outputs
 frontend/dist/
+dist/
+build/build/
+installer/
 
 # Dependencies
 frontend/node_modules/

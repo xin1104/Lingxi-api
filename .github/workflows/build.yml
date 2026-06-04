@@ -1,0 +1,70 @@
+name: Build Windows EXE
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Create frontend dist directory
+        run: mkdir -p frontend/dist
+
+      - name: Install Python dependencies
+        run: |
+          pip install -r backend/requirements.txt
+          pip install pyinstaller
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm install
+          npm run build
+
+      - name: Package with PyInstaller
+        run: pyinstaller --clean --noconfirm build/lingxi.spec
+
+      - name: Upload EXE artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Lingxi-EXE
+          path: dist/Lingxi/
+          compression-level: 0
+
+      - name: Setup Inno Setup
+        shell: pwsh
+        run: |
+          $url = "https://jrsoftware.org/download.php/is.exe"
+          $output = "$env:TEMP\innosetup.exe"
+          Invoke-WebRequest -Uri $url -OutFile $output
+          Start-Process -FilePath $output -ArgumentList "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/DIR=$env:ProgramFiles\Inno Setup 6" -Wait -NoNewWindow
+          echo "INNO_SETUP_DIR=$env:ProgramFiles\Inno Setup 6" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Build Installer
+        shell: pwsh
+        run: |
+          & "$env:ProgramFiles\Inno Setup 6\ISCC.exe" build\installer.iss
+
+      - name: Upload Installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Lingxi-Installer
+          path: installer/Lingxi-*.exe
+          compression-level: 0

@@ -1,5 +1,6 @@
 """应用配置模块"""
 
+import os
 from pathlib import Path
 
 # 后端服务配置
@@ -11,6 +12,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(exist_ok=True)
 DATABASE_URL = f"sqlite:///{DATA_DIR}/lingxi.db"
+
+# 打包环境下通过 LINGXI_DATA_DIR 环境变量覆盖数据目录
+_lingxi_data = os.environ.get("LINGXI_DATA_DIR")
+if _lingxi_data:
+    DATA_DIR = Path(_lingxi_data)
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    DATABASE_URL = f"sqlite:///{DATA_DIR}/lingxi.db"
 
 # 默认设置
 DEFAULT_REQUEST_TIMEOUT = 30  # 秒

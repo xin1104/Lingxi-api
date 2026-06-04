@@ -25,7 +25,12 @@ from app.features.proxy.router import router as proxy_router
 from app.features.capture.router import add_capture_record_async
 
 # 前端 dist 路径（相对于 backend 目录）
-FRONTEND_DIST = Path(__file__).resolve().parent.parent.parent / "frontend" / "dist"
+import sys as _sys
+_FROZEN = getattr(_sys, "frozen", False) and hasattr(_sys, "_MEIPASS")
+if _FROZEN:
+    FRONTEND_DIST = Path(_sys._MEIPASS) / "frontend" / "dist"
+else:
+    FRONTEND_DIST = Path(__file__).resolve().parent.parent.parent / "frontend" / "dist"
 INDEX_HTML = FRONTEND_DIST / "index.html"
 
 NO_FRONTEND_HTML = """<!DOCTYPE html>
