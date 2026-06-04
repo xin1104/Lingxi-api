@@ -174,63 +174,14 @@ export const useAppStore = create<AppState>((set, get) => ({
   sendCurrentRequest: async () => {
     const { currentRequest, variables } = get()
 
-    // 执行 Pre Script
-    let modifiedRequest = { ...currentRequest }
-    let modifiedVars = { ...variables }
-    if (currentRequest.preScript) {
-      try {
-        const { runPreScript } = await import('@/shared/utils/preScriptRunner')
-        const pr = runPreScript(currentRequest.preScript, variables)
-        set({ preScriptResult: pr })
-
-        if (pr.success) {
-          // 应用 header 修改
-          let hdrs = [...modifiedRequest.headers]
-          for (const hc of pr.headerChanges) {
-            if (hc.action === 'set') {
-              const existing = hdrs.findIndex(h => h.key.toLowerCase() === hc.key!.toLowerCase())
-              if (existing >= 0) hdrs[existing].value = hc.value!
-              else hdrs.push({ key: hc.key!, value: hc.value!, enabled: true, description: '' })
-            } else if (hc.action === 'remove') {
-              hdrs = hdrs.filter(h => h.key.toLowerCase() !== hc.key!.toLowerCase())
-            }
-          }
-          modifiedRequest.headers = hdrs
-
-          // 应用 param 修改
-          let prms = [...modifiedRequest.params]
-          for (const pc of pr.paramChanges) {
-            if (pc.action === 'set') {
-              const existing = prms.findIndex(p => p.key === pc.key)
-              if (existing >= 0) prms[existing].value = pc.value!
-              else prms.push({ key: pc.key!, value: pc.value!, enabled: true, description: '' })
-            } else if (pc.action === 'remove') {
-              prms = prms.filter(p => p.key !== pc.key)
-            }
-          }
-          modifiedRequest.params = prms
-
-          // 应用 env 修改
-          if (pr.envChanges) {
-            modifiedVars = { ...modifiedVars, ...pr.envChanges }
-          }
-
-          // 应用 body 修改
-          if (pr.bodyOverride) {
-            modifiedRequest.body = { ...modifiedRequest.body, type: 'json', json_data: pr.bodyOverride }
-          }
-        }
-      } catch (_) {
-        // Pre Script 执行失败不阻止请求
-      }
-    }
-
     set({ isLoading: true, response: null })
 
     try {
       const result = await api.sendRequest({
-        ...modifiedRequest,
-        variables: modifiedVars,
+        ...currentRequest,
+        variables: variables || {},
+        pre_script: currentRequest.preScript || '',
+        test_script: currentRequest.testScript || '',
       })
 
       if (result.success) {
@@ -245,6 +196,7 @@ export const useAppStore = create<AppState>((set, get) => ({
             duration: 0,
             content_type: '',
             error: result.message,
+            is_binary: false,
           },
           isLoading: false,
         })
@@ -266,6 +218,7 @@ export const useAppStore = create<AppState>((set, get) => ({
           duration: 0,
           content_type: '',
           error: error.message || '请求失败',
+          is_binary: false,
         },
         isLoading: false,
       })

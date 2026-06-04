@@ -314,8 +314,30 @@ export function RequestEditor() {
           {activeTab === 'tests' && (
             <div className="p-4">
               <p className="text-xs text-dark-text-secondary mb-2">
-                Tests — 响应返回后执行的测试断言（Demo 级安全实现）
+                Tests — 响应返回后执行的测试断言（沙箱隔离）
               </p>
+              <div className="flex gap-1.5 mb-2 flex-wrap">
+                {[
+                  { label: '状态码', code: 'pm.test("状态码为 200", () => {\n  pm.expect(pm.response.status).toBe(200)\n})' },
+                  { label: 'JSON', code: 'pm.test("返回 JSON", () => {\n  pm.expect(pm.response.json()).toBeJson()\n})' },
+                  { label: '包含', code: 'pm.test("包含字段", () => {\n  pm.expect(pm.response.body).toContain("success")\n})' },
+                  { label: '耗时', code: 'pm.test("响应时间 < 500ms", () => {\n  pm.expect(pm.response.time).toBeLessThan(500)\n})' },
+                ].map((s) => (
+                  <button
+                    key={s.label}
+                    onClick={() => {
+                      const currentScript = useAppStore.getState().currentRequest.testScript || ''
+                      const newScript = currentScript ? currentScript + '\n\n' + s.code : s.code
+                      useAppStore.setState((st) => ({
+                        currentRequest: { ...st.currentRequest, testScript: newScript }
+                      }))
+                    }}
+                    className="px-2 py-1 text-[11px] bg-dark-bg border border-dark-border rounded hover:bg-dark-card text-dark-text-secondary"
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
               <CodeEditor
                 value={currentRequest.testScript || ''}
                 onChange={(v: string | undefined) => useAppStore.setState((s) => ({

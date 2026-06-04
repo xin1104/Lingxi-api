@@ -22,7 +22,7 @@ from app.features.capture.router import router as capture_router
 from app.features.settings.router import router as settings_router
 from app.features.cookie_jar.router import router as cookie_jar_router
 from app.features.proxy.router import router as proxy_router
-from app.features.capture.router import add_capture_record
+from app.features.capture.router import add_capture_record_async
 
 # 前端 dist 路径（相对于 backend 目录）
 FRONTEND_DIST = Path(__file__).resolve().parent.parent.parent / "frontend" / "dist"
@@ -71,7 +71,7 @@ async def lifespan(app_ref: FastAPI):
 app = FastAPI(
     title="灵犀 API Client",
     description="本地优先的中文 API 调试客户端",
-    version="0.4.0",
+    version="0.5.0",
     lifespan=lifespan,
 )
 
@@ -115,7 +115,7 @@ async def capture_requests_middleware(request: Request, call_next):
             "response_headers": dict(response.headers),
             "created_at": time.strftime("%Y-%m-%d %H:%M:%S"),
         }
-        add_capture_record(capture_record)
+        add_capture_record_async(capture_record)
     return response
 
 

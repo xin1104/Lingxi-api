@@ -101,6 +101,7 @@ class MockRoute(SQLModel, table=True):
     headers: dict = Field(default={"Content-Type": "application/json"}, sa_column=Column(JSON))
     body: str = '{"message": "ok"}'
     enabled: bool = True
+    delay: int = 0  # 响应延迟（毫秒）
     created_at: datetime = Field(default_factory=datetime.now)
 
 

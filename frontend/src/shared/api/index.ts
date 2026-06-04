@@ -20,7 +20,7 @@ export async function healthCheck() {
 }
 
 // ===== 请求发送 =====
-export async function sendRequest(request: ApiRequest & { variables?: Record<string, string> }) {
+export async function sendRequest(request: ApiRequest & { variables?: Record<string, string>; pre_script?: string; test_script?: string }) {
   return fetchApi<ApiResponseData>('/send-request', {
     method: 'POST',
     body: JSON.stringify(request),

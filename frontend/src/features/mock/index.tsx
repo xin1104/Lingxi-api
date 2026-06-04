@@ -23,7 +23,10 @@ export function MockPage() {
     path: '',
     status_code: 200,
     body: '{"message": "ok"}',
+    delay: 0,
   })
+  const [showLogs, setShowLogs] = useState(false)
+  const [mockLogs, setMockLogs] = useState<any[]>([])
 
   useEffect(() => {
     loadMockRoutes()
@@ -33,7 +36,7 @@ export function MockPage() {
     if (newRoute.path) {
       await api.createMockRoute(newRoute)
       setShowNewRoute(false)
-      setNewRoute({ method: 'GET', path: '', status_code: 200, body: '{"message": "ok"}' })
+      setNewRoute({ method: 'GET', path: '', status_code: 200, body: '{"message": "ok"}', delay: 0 })
       loadMockRoutes()
     }
   }
@@ -46,6 +49,14 @@ export function MockPage() {
   const handleToggleRoute = async (route: MockRoute) => {
     await api.updateMockRoute(route.id, { enabled: !route.enabled })
     loadMockRoutes()
+  }
+
+  const handleLoadLogs = async () => {
+    const result = await api.getMockLogs(50)
+    if (result.success) {
+      setMockLogs(result.data)
+      setShowLogs(true)
+    }
   }
 
   return (
@@ -79,6 +90,9 @@ export function MockPage() {
             <Button variant="secondary" onClick={() => setShowNewRoute(true)}>
               <Plus size={14} className="mr-1" />
               新建路由
+            </Button>
+            <Button variant="ghost" onClick={handleLoadLogs}>
+              查看日志
             </Button>
           </div>
         </div>
@@ -124,13 +138,83 @@ export function MockPage() {
               <Button variant="ghost" onClick={() => setShowNewRoute(false)}>取消</Button>
             </div>
           </div>
-          <div className="mt-2">
+          <div className="mt-2 flex gap-2">
             <textarea
               value={newRoute.body}
               onChange={(e) => setNewRoute({ ...newRoute, body: e.target.value })}
-              placeholder="响应体 JSON"
+              placeholder="响应体 JSON（支持模板变量：{{$timestamp}} {{$uuid}} {{$datetime}} {{$randomInt}}）"
               className="w-full h-20 px-3 py-2 bg-dark-bg border border-dark-border rounded text-sm text-dark-text font-mono resize-none"
             />
+            <div className="flex flex-col justify-end gap-1 min-w-[120px]">
+              <label className="text-xs text-dark-text-secondary">延迟(ms)</label>
+              <Input
+                type="number"
+                value={newRoute.delay}
+                onChange={(e) => setNewRoute({ ...newRoute, delay: parseInt(e.target.value) || 0 })}
+                placeholder="0"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 日志面板 */}
+      {showLogs && (
+        <div className="border-b border-dark-border">
+          <div className="flex items-center justify-between px-4 py-2 bg-dark-bg">
+            <h3 className="text-sm font-medium text-dark-text">命中日志</h3>
+            <button
+              onClick={() => setShowLogs(false)}
+              className="text-xs text-dark-text-secondary hover:text-dark-text"
+            >
+              关闭
+            </button>
+          </div>
+          <div className="max-h-48 overflow-y-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-dark-border text-dark-text-secondary">
+                  <th className="text-left py-1.5 px-4 font-medium">方法</th>
+                  <th className="text-left py-1.5 px-4 font-medium">路径</th>
+                  <th className="text-left py-1.5 px-4 font-medium">匹配</th>
+                  <th className="text-left py-1.5 px-4 font-medium">时间</th>
+                </tr>
+              </thead>
+              <tbody>
+                {mockLogs.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="text-center py-4 text-dark-text-secondary">
+                      暂无日志
+                    </td>
+                  </tr>
+                ) : (
+                  mockLogs.map((log, i) => (
+                    <tr key={i} className="border-b border-dark-border/30 hover:bg-dark-card/50">
+                      <td className={cn(
+                        'py-1.5 px-4 font-mono',
+                        log.method === 'GET' && 'text-success',
+                        log.method === 'POST' && 'text-warning',
+                        log.method === 'PUT' && 'text-info',
+                        log.method === 'DELETE' && 'text-error',
+                      )}>
+                        {log.method}
+                      </td>
+                      <td className="py-1.5 px-4 font-mono text-dark-text">{log.path}</td>
+                      <td className="py-1.5 px-4">
+                        {log.matched ? (
+                          <span className="text-success">✅</span>
+                        ) : (
+                          <span className="text-error">❌</span>
+                        )}
+                      </td>
+                      <td className="py-1.5 px-4 text-dark-text-secondary">
+                        {log.timestamp?.split('T')[1]?.split('.')[0] || log.timestamp}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
@@ -168,6 +252,12 @@ export function MockPage() {
                 <span className="text-sm text-dark-text-secondary">
                   {route.status_code}
                 </span>
+
+                {route.delay > 0 && (
+                  <span className="text-xs text-dark-text-secondary">
+                    ⏱ {route.delay}ms
+                  </span>
+                )}
 
                 <button
                   onClick={() => handleToggleRoute(route)}

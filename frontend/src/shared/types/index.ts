@@ -62,6 +62,12 @@ export interface ApiResponseData {
   duration: number
   content_type: string
   error?: string
+  is_binary: boolean
+  script_results?: {
+    pre_script_logs: string[]
+    test_results: TestResultItem[]
+    env_changes: Record<string, string>
+  }
 }
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD' | 'OPTIONS'
@@ -145,6 +151,7 @@ export interface MockRoute {
   headers: Record<string, string>
   body: string
   enabled: boolean
+  delay: number
   created_at: string
 }
 
@@ -156,12 +163,13 @@ export interface MockLog {
   timestamp: string
 }
 
-// ===== 测试相关 =====
-export interface TestResult {
+export interface TestResultItem {
+  name: string
   passed: boolean
   message: string
   expected?: any
   actual?: any
+  duration: number
 }
 
 // ===== 设置 =====

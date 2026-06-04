@@ -53,15 +53,14 @@ async def send_api_request(
 
     # 添加捕获记录
     add_capture_record({
-        "id": history.id if history else 0,
         "method": request.method,
         "url": request.url,
-        "status_code": result.status_code,
+        "status_code": result.status_code if result.error is None else 0,
         "duration": result.duration,
         "request_headers": {},
         "response_headers": result.headers if result.status_code > 0 else {},
-        "created_at": history.created_at.isoformat() if history else "",
-    })
+        "response_body": result.body[:500] if result.body else None,
+    }, session)
 
     return ApiResponse(
         success=result.error is None,
@@ -76,5 +75,5 @@ async def health_check():
     return {
         "status": "ok",
         "message": "灵犀 API 后端运行正常",
-        "version": "0.4.0",
+        "version": "0.5.0",
     }

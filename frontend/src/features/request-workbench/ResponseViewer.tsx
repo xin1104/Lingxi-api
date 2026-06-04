@@ -4,8 +4,8 @@ import { useState, useMemo } from 'react'
 import { useAppStore } from '@/shared/store'
 import { cn, formatSize, formatDuration, getStatusColor, copyToClipboard } from '@/shared/utils'
 import { Tabs, EmptyState } from '@/shared/ui'
-import { Copy, Check, CheckCircle, XCircle } from 'lucide-react'
-import { runTests, TestCase } from '@/shared/utils/testRunner'
+import { Button } from '@/shared/ui'
+import { Copy, Check, CheckCircle, XCircle, FileDown, Download } from 'lucide-react'
 
 // 解析 Set-Cookie 头
 function parseCookies(headers: Record<string, string>) {
@@ -13,7 +13,6 @@ function parseCookies(headers: Record<string, string>) {
   const setCookie = headers['set-cookie'] || headers['Set-Cookie']
   if (!setCookie) return cookies
 
-  // 简单解析 Set-Cookie，容错处理
   const parts = setCookie.split(',')
   for (const part of parts) {
     const trimmed = part.trim()
@@ -81,32 +80,16 @@ export function ResponseViewer() {
     return parseCookies(response.headers)
   }, [response?.headers])
 
-  // 执行 Tests
-  const testResults = useMemo(() => {
-    if (!response || !currentRequest.testScript) return []
-    const ctx = {
-      response: {
-        status: response.status_code,
-        headers: response.headers,
-        body: response.body,
-        json: () => {
-          try { return JSON.parse(response.body) } catch { return null }
-        },
-        time: response.duration,
-      },
-      request: {
-        method: currentRequest.method,
-        url: currentRequest.url,
-      },
-    }
-    return runTests(currentRequest.testScript, ctx)
-  }, [response, currentRequest.testScript])
+  // 从后端 script_results 获取测试结果
+  const testResults = response?.script_results?.test_results || []
+  const passedCount = testResults.filter((r) => r.passed).length
+  const failedCount = testResults.filter((r) => !r.passed).length
 
   const tabs = [
     { key: 'body', label: '响应体' },
     { key: 'headers', label: '响应头' },
     { key: 'cookies', label: 'Cookies' },
-    { key: 'tests', label: testResults.length > 0 ? `测试结果 (${testResults.filter((t: TestCase) => t.passed).length}/${testResults.length})` : '测试结果' },
+    { key: 'tests', label: testResults.length > 0 ? `测试结果 (${passedCount}/${testResults.length})` : '测试结果' },
   ]
 
   const handleCopy = async () => {
@@ -115,6 +98,19 @@ export function ResponseViewer() {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     }
+  }
+
+  const handleDownload = () => {
+    if (!response?.body) return
+    const blob = new Blob([response.body], { type: response.content_type || 'application/octet-stream' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'response.bin'
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
   }
 
   const getFormattedBody = () => {
@@ -181,13 +177,13 @@ export function ResponseViewer() {
   return (
     <div className="flex flex-col h-full">
       {/* 状态栏 */}
-      <div className="flex items-center gap-4 px-4 py-2 border-b border-dark-border">
-        <span className={cn('font-mono font-bold', getStatusColor(response.status_code))}>
+      <div className="flex items-center gap-3 px-4 py-2 border-b border-dark-border text-sm">
+        <span className={cn('font-mono font-bold text-base', getStatusColor(response.status_code))}>
           {response.status_code}
         </span>
-        <span className="text-sm text-dark-text-secondary">{formatDuration(response.duration)}</span>
-        <span className="text-sm text-dark-text-secondary">{formatSize(response.body_size)}</span>
-        <span className="text-sm text-dark-text-secondary truncate max-w-[200px]">{response.content_type}</span>
+        <span className="text-dark-text-secondary">⏱ {formatDuration(response.duration)}</span>
+        <span className="text-dark-text-secondary">📦 {formatSize(response.body_size)}</span>
+        <span className="text-dark-text-secondary text-xs">HTTP/1.1</span>
         <div className="flex-1" />
         <button
           onClick={handleCopy}
@@ -205,6 +201,21 @@ export function ResponseViewer() {
       <div className="flex-1 overflow-auto">
         {activeTab === 'body' && (
           <div className="p-4">
+            {/* HTML 预览 */}
+            {response.content_type?.includes('text/html') && (
+              <div className="border border-dark-border rounded overflow-hidden mb-4">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-dark-bg border-b border-dark-border">
+                  <span className="text-xs text-dark-text-secondary">HTML 预览（沙箱隔离）</span>
+                </div>
+                <iframe
+                  srcDoc={response.body}
+                  sandbox="allow-same-origin"
+                  className="w-full h-96 bg-white"
+                  title="HTML 预览"
+                />
+              </div>
+            )}
+
             {imageType ? (
               <div className="flex flex-col items-center gap-2">
                 <img
@@ -217,11 +228,15 @@ export function ResponseViewer() {
                   图片预览（{formatSize(response.body_size)}），可通过上方的"复制"按钮查看原始数据
                 </p>
               </div>
-            ) : !textType ? (
-              <div className="flex flex-col items-center justify-center py-8 text-dark-text-secondary gap-2">
-                <p className="text-sm">这是二进制响应，当前版本暂不直接展示正文</p>
-                <p className="text-xs">响应大小: {formatSize(response.body_size)}</p>
-                <p className="text-xs">Content-Type: {response.content_type}</p>
+            ) : response.is_binary ? (
+              <div className="flex flex-col items-center gap-3 py-12">
+                <FileDown size={32} className="text-dark-text-secondary" />
+                <p className="text-sm text-dark-text-secondary">
+                  二进制响应 ({formatSize(response.body_size)})
+                </p>
+                <Button onClick={handleDownload}>
+                  <Download size={14} className="mr-1" />下载文件
+                </Button>
               </div>
             ) : (
               <pre
@@ -306,41 +321,50 @@ export function ResponseViewer() {
               </p>
             ) : testResults.length === 0 ? (
               <p className="text-sm text-dark-text-secondary text-center py-8">
-                测试脚本为空或无法解析，请检查 Tests 面板
+                未获取到测试结果。请检查 Tests 面板脚本是否正确。
               </p>
             ) : (
-              <div className="space-y-2">
-                {testResults.map((tr: TestCase, i: number) => (
-                  <div
-                    key={i}
-                    className={cn(
-                      'flex items-center gap-3 px-4 py-3 rounded-lg border',
-                      tr.passed
-                        ? 'bg-success/5 border-success/20'
-                        : 'bg-error/5 border-error/20'
-                    )}
-                  >
-                    {tr.passed ? (
-                      <CheckCircle size={16} className="text-success flex-shrink-0" />
-                    ) : (
-                      <XCircle size={16} className="text-error flex-shrink-0" />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className={cn('text-sm', tr.passed ? 'text-dark-text' : 'text-error')}>
-                        {tr.name}
-                      </p>
-                      {!tr.passed && (
-                        <p className="text-xs text-error/80 mt-0.5">{tr.message}</p>
+              <>
+                {/* 统计栏 */}
+                <div className="flex gap-4 mb-3 px-3 py-2 bg-dark-bg rounded">
+                  <span className="text-sm text-success">✓ {passedCount} 通过</span>
+                  <span className="text-sm text-error">✗ {failedCount} 失败</span>
+                  <span className="text-sm text-dark-text-secondary">共 {testResults.length} 条</span>
+                </div>
+                {/* 结果列表 */}
+                <div className="space-y-2">
+                  {testResults.map((tr, i) => (
+                    <div
+                      key={i}
+                      className={cn(
+                        'flex items-center gap-3 px-4 py-3 rounded-lg border',
+                        tr.passed
+                          ? 'bg-success/5 border-success/20'
+                          : 'bg-error/5 border-error/20'
+                      )}
+                    >
+                      {tr.passed ? (
+                        <CheckCircle size={16} className="text-success flex-shrink-0" />
+                      ) : (
+                        <XCircle size={16} className="text-error flex-shrink-0" />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className={cn('text-sm', tr.passed ? 'text-dark-text' : 'text-error')}>
+                          {tr.name}
+                        </p>
+                        {!tr.passed && (
+                          <p className="text-xs text-error/80 mt-0.5">{tr.message}</p>
+                        )}
+                      </div>
+                      {tr.duration !== undefined && (
+                        <span className="text-xs text-dark-text-secondary flex-shrink-0">
+                          {tr.duration}ms
+                        </span>
                       )}
                     </div>
-                    {tr.duration !== undefined && (
-                      <span className="text-xs text-dark-text-secondary flex-shrink-0">
-                        {tr.duration}ms
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              </>
             )}
           </div>
         )}

@@ -104,6 +104,12 @@ async def send_request(
             if set_cookie_values:
                 resp_headers["set-cookie"] = "\n".join(set_cookie_values)
 
+            # 判断是否为二进制响应
+            is_binary = not any(
+                t in content_type.lower() for t in
+                ["text/", "json", "xml", "javascript", "html"]
+            ) and not content_type.lower().startswith("image/")
+
             return ApiResponseData(
                 status_code=response.status_code,
                 headers=resp_headers,
@@ -111,6 +117,7 @@ async def send_request(
                 body_size=body_size,
                 duration=duration,
                 content_type=content_type,
+                is_binary=is_binary,
             )
 
     except httpx.TimeoutException:

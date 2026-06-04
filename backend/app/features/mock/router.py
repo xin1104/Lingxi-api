@@ -2,6 +2,8 @@
 
 import asyncio
 import json
+import uuid
+import time
 from datetime import datetime
 from pydantic import BaseModel
 from fastapi import APIRouter, Depends, HTTPException
@@ -16,6 +18,21 @@ router = APIRouter(prefix="/api", tags=["Mock 服务"])
 _mock_app = None
 _mock_server = None
 _mock_logs: list[dict] = []
+
+# 模板变量替换器
+TEMPLATE_VARS = {
+    "{{$timestamp}}": lambda: str(int(time.time())),
+    "{{$uuid}}": lambda: str(uuid.uuid4()),
+    "{{$datetime}}": lambda: datetime.now().isoformat(),
+    "{{$randomInt}}": lambda: str(int(time.time() * 1000) % 1000000),
+}
+
+
+def _replace_template_vars(text: str) -> str:
+    """替换响应 body 中的模板变量"""
+    for pattern, resolver in TEMPLATE_VARS.items():
+        text = text.replace(pattern, resolver())
+    return text
 
 
 class MockStartInput(BaseModel):
@@ -53,10 +70,16 @@ def create_mock_app():
                     }
                     _mock_logs.append(log_entry)
 
+                    # 延迟模拟
+                    if route.delay > 0:
+                        await asyncio.sleep(route.delay / 1000)
+
+                    # 模板变量替换
+                    resp_body_str = _replace_template_vars(route.body)
                     try:
-                        resp_body = json.loads(route.body)
+                        resp_body = json.loads(resp_body_str)
                     except (json.JSONDecodeError, TypeError):
-                        resp_body = route.body
+                        resp_body = resp_body_str
 
                     return MockJSONResponse(
                         content=resp_body,
@@ -98,6 +121,7 @@ async def create_mock_route(
         headers=data.headers,
         body=data.body,
         enabled=data.enabled,
+        delay=data.delay,
     )
     session.add(route)
     session.commit()
@@ -127,6 +151,8 @@ async def update_mock_route(
         route.body = data.body
     if data.enabled is not None:
         route.enabled = data.enabled
+    if data.delay is not None:
+        route.delay = data.delay
     session.add(route)
     session.commit()
     session.refresh(route)

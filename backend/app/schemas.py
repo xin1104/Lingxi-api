@@ -75,6 +75,25 @@ class SendRequestInput(BaseModel):
     body: RequestBody = Field(default_factory=RequestBody)
     timeout: int = 30
     variables: dict[str, str] = {}
+    pre_script: str = ""       # Pre Script 脚本
+    test_script: str = ""      # Tests 脚本
+
+
+class TestResultItem(BaseModel):
+    """单条测试结果"""
+    name: str
+    passed: bool
+    message: str = ""
+    expected: Any = None
+    actual: Any = None
+    duration: int = 0
+
+
+class ScriptResults(BaseModel):
+    """脚本执行结果"""
+    pre_script_logs: list[str] = []
+    test_results: list[TestResultItem] = []
+    env_changes: dict[str, str] = {}
 
 
 class ApiResponseData(BaseModel):
@@ -86,6 +105,8 @@ class ApiResponseData(BaseModel):
     duration: int = 0  # 毫秒
     content_type: str = ""
     error: Optional[str] = None
+    is_binary: bool = False                          # 是否为二进制响应
+    script_results: Optional[ScriptResults] = None   # 脚本执行结果
 
 
 # ===== 集合相关 =====
@@ -198,6 +219,7 @@ class MockRouteCreate(BaseModel):
     headers: dict = Field(default={"Content-Type": "application/json"})
     body: str = '{"message": "ok"}'
     enabled: bool = True
+    delay: int = 0  # 响应延迟（毫秒）
 
 
 class MockRouteUpdate(BaseModel):
@@ -208,6 +230,7 @@ class MockRouteUpdate(BaseModel):
     headers: Optional[dict] = None
     body: Optional[str] = None
     enabled: Optional[bool] = None
+    delay: Optional[int] = None
 
 
 # ===== 导入导出 =====
