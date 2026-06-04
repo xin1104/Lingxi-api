@@ -37,6 +37,7 @@ export function Sidebar({ className }: SidebarProps) {
   const [expandedCollections, setExpandedCollections] = React.useState<Set<number>>(new Set())
   const [showNewCollection, setShowNewCollection] = React.useState(false)
   const [newCollectionName, setNewCollectionName] = React.useState('')
+  const [collectionNameError, setCollectionNameError] = React.useState('')
 
   useEffect(() => {
     loadCollections()
@@ -113,25 +114,42 @@ export function Sidebar({ className }: SidebarProps) {
             </div>
 
             {showNewCollection && (
-              <div className="flex gap-1 px-2 py-1">
-                <input
-                  type="text"
-                  value={newCollectionName}
-                  onChange={(e) => setNewCollectionName(e.target.value)}
-                  placeholder="集合名称"
-                  className="flex-1 px-2 py-1 text-xs bg-dark-card border border-dark-border rounded"
-                  autoFocus
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleCreateCollection()
-                    if (e.key === 'Escape') setShowNewCollection(false)
-                  }}
-                />
-                <button
-                  onClick={handleCreateCollection}
-                  className="px-2 py-1 text-xs bg-primary text-white rounded"
-                >
-                  创建
-                </button>
+              <div>
+                <div className="flex gap-1 px-2 py-1">
+                  <input
+                    type="text"
+                    value={newCollectionName}
+                    onChange={(e) => { setNewCollectionName(e.target.value); setCollectionNameError('') }}
+                    placeholder="集合名称"
+                    className="flex-1 px-2 py-1 text-xs bg-dark-card border border-dark-border rounded"
+                    autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        if (!newCollectionName.trim()) {
+                          setCollectionNameError('集合名称不能为空')
+                          return
+                        }
+                        handleCreateCollection()
+                      }
+                      if (e.key === 'Escape') { setShowNewCollection(false); setCollectionNameError('') }
+                    }}
+                  />
+                  <button
+                    onClick={() => {
+                      if (!newCollectionName.trim()) {
+                        setCollectionNameError('集合名称不能为空')
+                        return
+                      }
+                      handleCreateCollection()
+                    }}
+                    className="px-2 py-1 text-xs bg-primary text-white rounded"
+                  >
+                    创建
+                  </button>
+                </div>
+                {collectionNameError && (
+                  <p className="px-3 text-xs text-error">{collectionNameError}</p>
+                )}
               </div>
             )}
 

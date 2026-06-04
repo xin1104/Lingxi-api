@@ -71,7 +71,7 @@ async def lifespan(app_ref: FastAPI):
 app = FastAPI(
     title="灵犀 API Client",
     description="本地优先的中文 API 调试客户端",
-    version="0.5.0",
+    version="1.0.0",
     lifespan=lifespan,
 )
 
@@ -161,7 +161,15 @@ else:
 
 
 if __name__ == "__main__":
+    import socket
     import uvicorn
+
+    # 检查端口是否被占用
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        result = sock.connect_ex((BACKEND_HOST, BACKEND_PORT))
+        if result == 0:
+            print(f"⚠️  端口 {BACKEND_PORT} 已被占用，请检查是否有其他实例正在运行")
+            print("   可尝试：修改 backend/app/config.py 中的 BACKEND_PORT")
 
     uvicorn.run(
         "app.main:app",

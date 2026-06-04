@@ -10,6 +10,7 @@ import { HeadersEditor } from './HeadersEditor'
 import { AuthEditor } from './AuthEditor'
 import { BodyEditor } from './BodyEditor'
 import { CodeEditor } from '@/shared/ui/CodeEditor'
+import { toast } from '@/shared/ui/Toast'
 import * as api from '@/shared/api'
 
 const HTTP_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS']
@@ -35,6 +36,7 @@ export function RequestEditor() {
   const [activeTab, setActiveTab] = useState('params')
   const [showSaveDialog, setShowSaveDialog] = useState(false)
   const [saveName, setSaveName] = useState('')
+  const [urlError, setUrlError] = useState('')
   const [saveCollectionId, setSaveCollectionId] = useState<number | null>(null)
   const [showCodePanel, setShowCodePanel] = useState(false)
   const [generatedCode, setGeneratedCode] = useState('')
@@ -55,6 +57,10 @@ export function RequestEditor() {
   })
 
   const handleSend = () => {
+    if (!currentRequest.url.trim()) {
+      setUrlError('URL 不能为空')
+      return
+    }
     sendCurrentRequest()
   }
 
@@ -125,10 +131,22 @@ export function RequestEditor() {
             className="pr-4 font-mono"
             onKeyDown={(e) => {
               if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                if (!currentRequest.url.trim()) {
+                  setUrlError('URL 不能为空')
+                  return
+                }
                 handleSend()
               }
             }}
+            onFocus={() => setUrlError('')}
+            onBlur={() => {
+              if (!currentRequest.url.trim()) setUrlError('URL 不能为空')
+              else setUrlError('')
+            }}
           />
+          {urlError && (
+            <p className="text-xs text-error absolute left-0 right-0 top-full mt-1">{urlError}</p>
+          )}
           {currentRequest.url !== previewUrl && (
             <div className="absolute left-0 right-0 top-full mt-1 px-3 py-1 bg-dark-card border border-dark-border rounded text-xs text-dark-text-secondary truncate z-10">
               预览: {previewUrl}
@@ -214,7 +232,16 @@ export function RequestEditor() {
                 />
                 <div className="flex gap-2 justify-end">
                   <Button variant="ghost" onClick={() => setShowSaveDialog(false)}>取消</Button>
-                  <Button onClick={handleSave} disabled={!saveName.trim()}>保存</Button>
+                  <Button
+                    onClick={() => {
+                      if (!saveName.trim()) {
+                        toast.error('请求名称不能为空')
+                        return
+                      }
+                      handleSave()
+                    }}
+                    disabled={!saveName.trim()}
+                  >保存</Button>
                 </div>
               </div>
             )}
