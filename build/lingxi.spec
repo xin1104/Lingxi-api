@@ -1,12 +1,14 @@
 # -*- mode: python ; coding: utf-8 -*-
 
 a = Analysis(
-    ['backend/run_frozen.py'],
+    ['backend/run_frozen.py', 'backend/desktop.py'],
     pathex=['backend'],
     binaries=[],
     datas=[
         ('backend/app', 'app'),
+        ('backend/desktop.py', '.'),
         ('frontend/dist', 'frontend/dist'),
+        ('build/lingxi.ico', '.'),
     ],
     hiddenimports=[
         'sqlmodel',
@@ -49,6 +51,7 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     icon='build/lingxi.ico',
+    uac_admin=False,
 )
 
 # 默认输出到 dist/Lingxi/ 目录

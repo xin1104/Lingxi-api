@@ -174,7 +174,7 @@ class TestProxyHealthCheck:
         response = client.get("/api/health")
         assert response.status_code == 200
         data = response.json()
-        assert data["version"] == "1.0.0"
+        assert data["version"] == "1.1.0"
 
 
 class TestProxyPortValidation:

@@ -76,7 +76,7 @@ async def lifespan(app_ref: FastAPI):
 app = FastAPI(
     title="灵犀 API Client",
     description="本地优先的中文 API 调试客户端",
-    version="1.0.0",
+    version="1.1.0",
     lifespan=lifespan,
 )
 
