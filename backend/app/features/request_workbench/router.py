@@ -75,5 +75,5 @@ async def health_check():
     return {
         "status": "ok",
         "message": "灵犀 API 后端运行正常",
-        "version": "0.5.0",
+        "version": "1.0.0",
     }
