@@ -140,3 +140,26 @@ class AppSettings(SQLModel, table=True):
     proxy_type: str = "none"  # none, system, custom
     proxy_url: str = ""
     cookie_jar_enabled: bool = True
+    proxy_port: int = 8899
+
+
+class ProxyLog(SQLModel, table=True):
+    """代理抓包记录"""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    source: str = "proxy"  # proxy | internal
+    method: str
+    url: str
+    host: str = ""
+    path: str = ""
+    status_code: Optional[int] = None
+    duration: Optional[int] = None  # 毫秒
+    request_headers: dict = Field(default={}, sa_column=Column(JSON))
+    request_body_preview: Optional[str] = None
+    response_headers: dict = Field(default={}, sa_column=Column(JSON))
+    response_body_preview: Optional[str] = None
+    content_type: str = ""
+    size: Optional[int] = None
+    created_at: datetime = Field(default_factory=datetime.now)
+    error_message: Optional[str] = None
+    is_https_connect: bool = False
+    note: str = ""

@@ -5,7 +5,7 @@ import { useAppStore } from '@/shared/store'
 import { cn, formatSize, formatDuration, getStatusColor, copyToClipboard } from '@/shared/utils'
 import { Tabs, EmptyState } from '@/shared/ui'
 import { Copy, Check, CheckCircle, XCircle } from 'lucide-react'
-import { runTests } from '@/shared/utils/testRunner'
+import { runTests, TestCase } from '@/shared/utils/testRunner'
 
 // 解析 Set-Cookie 头
 function parseCookies(headers: Record<string, string>) {
@@ -85,12 +85,19 @@ export function ResponseViewer() {
   const testResults = useMemo(() => {
     if (!response || !currentRequest.testScript) return []
     const ctx = {
-      status: response.status_code,
-      headers: response.headers,
-      body: response.body,
-      json: (() => {
-        try { return JSON.parse(response.body) } catch { return null }
-      })(),
+      response: {
+        status: response.status_code,
+        headers: response.headers,
+        body: response.body,
+        json: () => {
+          try { return JSON.parse(response.body) } catch { return null }
+        },
+        time: response.duration,
+      },
+      request: {
+        method: currentRequest.method,
+        url: currentRequest.url,
+      },
     }
     return runTests(currentRequest.testScript, ctx)
   }, [response, currentRequest.testScript])
@@ -99,7 +106,7 @@ export function ResponseViewer() {
     { key: 'body', label: '响应体' },
     { key: 'headers', label: '响应头' },
     { key: 'cookies', label: 'Cookies' },
-    { key: 'tests', label: testResults.length > 0 ? `测试结果 (${testResults.filter(t => t.passed).length}/${testResults.length})` : '测试结果' },
+    { key: 'tests', label: testResults.length > 0 ? `测试结果 (${testResults.filter((t: TestCase) => t.passed).length}/${testResults.length})` : '测试结果' },
   ]
 
   const handleCopy = async () => {
@@ -303,7 +310,7 @@ export function ResponseViewer() {
               </p>
             ) : (
               <div className="space-y-2">
-                {testResults.map((tr, i) => (
+                {testResults.map((tr: TestCase, i: number) => (
                   <div
                     key={i}
                     className={cn(

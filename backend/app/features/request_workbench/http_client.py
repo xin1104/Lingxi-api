@@ -95,9 +95,18 @@ async def send_request(
                 else:
                     body_text = body_bytes.decode("utf-8", errors="replace")
 
+            # 保留所有 Set-Cookie 头（httpx Headers 转 dict 会丢失同名字段）
+            resp_headers = {}
+            set_cookie_values = response.headers.get_list("set-cookie")
+            for key, value in response.headers.multi_items():
+                if key.lower() != "set-cookie":
+                    resp_headers[key] = value
+            if set_cookie_values:
+                resp_headers["set-cookie"] = "\n".join(set_cookie_values)
+
             return ApiResponseData(
                 status_code=response.status_code,
-                headers=dict(response.headers),
+                headers=resp_headers,
                 body=body_text,
                 body_size=body_size,
                 duration=duration,

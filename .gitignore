@@ -8,3 +8,15 @@ env/
 !.env.example
 .vscode/
 .idea/
+# Build outputs
+frontend/dist/
+
+# Dependencies
+frontend/node_modules/
+
+# Database (local only)
+backend/data/
+
+# OS files
+.DS_Store
+Thumbs.db

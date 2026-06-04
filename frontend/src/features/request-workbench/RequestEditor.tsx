@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useAppStore } from '@/shared/store'
 import { cn, getMethodColor, copyToClipboard } from '@/shared/utils'
 import { Button, Input, Tabs } from '@/shared/ui'
-import { Send, Save, Code, Check, X } from 'lucide-react'
+import { Send, Save, Code, Check, X, Keyboard } from 'lucide-react'
 import { ParamsEditor } from './ParamsEditor'
 import { HeadersEditor } from './HeadersEditor'
 import { AuthEditor } from './AuthEditor'
@@ -247,6 +247,26 @@ export function RequestEditor() {
         </div>
       )}
 
+      {/* 快捷键提示 */}
+      <div className="flex items-center gap-4 px-4 py-1.5 border-b border-dark-border bg-dark-bg/50 text-[11px] text-dark-text-secondary">
+        <span className="flex items-center gap-1.5">
+          <Keyboard size={11} />
+          快捷键:
+        </span>
+        <span className="flex items-center gap-1">
+          <kbd className="px-1 py-0.5 bg-dark-card border border-dark-border rounded text-[10px] font-mono">Ctrl/Cmd + Enter</kbd>
+          <span>发送</span>
+        </span>
+        <span className="flex items-center gap-1">
+          <kbd className="px-1 py-0.5 bg-dark-card border border-dark-border rounded text-[10px] font-mono">Ctrl/Cmd + S</kbd>
+          <span>保存</span>
+        </span>
+        <span className="flex items-center gap-1">
+          <kbd className="px-1 py-0.5 bg-dark-card border border-dark-border rounded text-[10px] font-mono">Alt + Shift + F</kbd>
+          <span>格式化 JSON</span>
+        </span>
+      </div>
+
       {/* 标签页 */}
       <div className="flex-1 flex flex-col overflow-hidden">
         <Tabs tabs={tabs} activeKey={activeTab} onChange={setActiveTab} />
@@ -283,7 +303,7 @@ export function RequestEditor() {
               </p>
               <CodeEditor
                 value={currentRequest.preScript || ''}
-                onChange={(v) => useAppStore.setState((s) => ({
+                onChange={(v: string | undefined) => useAppStore.setState((s) => ({
                   currentRequest: { ...s.currentRequest, preScript: v || '' }
                 }))}
                 language="javascript"
@@ -298,7 +318,7 @@ export function RequestEditor() {
               </p>
               <CodeEditor
                 value={currentRequest.testScript || ''}
-                onChange={(v) => useAppStore.setState((s) => ({
+                onChange={(v: string | undefined) => useAppStore.setState((s) => ({
                   currentRequest: { ...s.currentRequest, testScript: v || '' }
                 }))}
                 language="javascript"

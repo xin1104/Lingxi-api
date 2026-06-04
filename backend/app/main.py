@@ -21,6 +21,7 @@ from app.features.codegen.router import router as codegen_router
 from app.features.capture.router import router as capture_router
 from app.features.settings.router import router as settings_router
 from app.features.cookie_jar.router import router as cookie_jar_router
+from app.features.proxy.router import router as proxy_router
 from app.features.capture.router import add_capture_record
 
 # 前端 dist 路径（相对于 backend 目录）
@@ -70,7 +71,7 @@ async def lifespan(app_ref: FastAPI):
 app = FastAPI(
     title="灵犀 API Client",
     description="本地优先的中文 API 调试客户端",
-    version="0.1.0",
+    version="0.4.0",
     lifespan=lifespan,
 )
 
@@ -94,6 +95,7 @@ app.include_router(codegen_router)
 app.include_router(capture_router)
 app.include_router(settings_router)
 app.include_router(cookie_jar_router)
+app.include_router(proxy_router)
 
 
 @app.middleware("http")

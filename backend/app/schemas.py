@@ -257,6 +257,7 @@ class AppSettingsUpdate(BaseModel):
     proxy_type: Optional[str] = None
     proxy_url: Optional[str] = None
     cookie_jar_enabled: Optional[bool] = None
+    proxy_port: Optional[int] = None
 
 
 # ===== 脚本测试 =====

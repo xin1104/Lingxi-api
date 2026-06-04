@@ -11,6 +11,7 @@ import { MockPage } from '@/features/mock'
 import { ImportExportPage } from '@/features/import-export'
 import { CapturePage } from '@/features/capture'
 import { SettingsPage } from '@/features/settings'
+import { ToastContainer } from '@/shared/ui/Toast'
 
 function applyTheme(theme: string) {
   const root = document.documentElement
@@ -90,6 +91,7 @@ export function App() {
       <main className="flex-1 flex flex-col overflow-hidden">
         {renderMainContent()}
       </main>
+      <ToastContainer />
     </div>
   )
 }

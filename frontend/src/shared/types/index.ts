@@ -174,6 +174,68 @@ export interface AppSettings {
   mock_port: number
   proxy_type: 'none' | 'system' | 'custom'
   proxy_url: string
+  cookie_jar_enabled?: boolean
+  proxy_port?: number
+}
+
+// ===== Cookie Jar =====
+export interface CookieJarItem {
+  id: number
+  name: string
+  value: string
+  domain: string
+  path: string
+  expires?: string
+  max_age?: number
+  http_only: boolean
+  secure: boolean
+  same_site: string
+  created_at: string
+}
+
+export interface CookieJarStatus {
+  enabled: boolean
+  count: number
+}
+
+// ===== HTTP 代理 =====
+export interface ProxyStatus {
+  running: boolean
+  host: string
+  port: number
+  address: string
+  log_count: number
+  note: string
+}
+
+export interface ProxyLog {
+  id: number
+  source: string
+  method: string
+  url: string
+  host: string
+  path: string
+  status_code?: number
+  duration?: number
+  request_headers: Record<string, string>
+  request_body_preview?: string
+  response_headers: Record<string, string>
+  response_body_preview?: string
+  content_type: string
+  size?: number
+  created_at: string
+  error_message?: string
+  is_https_connect: boolean
+  note: string
+}
+
+export interface ProxyLogFilter {
+  source?: string
+  method?: string
+  host?: string
+  status_code?: number
+  keyword?: string
+  is_https_connect?: boolean
 }
 
 // ===== 代码生成 =====

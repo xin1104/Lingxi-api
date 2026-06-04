@@ -15,6 +15,7 @@ from app.models import (
     MockRoute,
     MockLog,
     CaptureRecord,
+    CookieJar,
 )
 from app.schemas import ApiResponse, AppSettingsUpdate
 
@@ -66,6 +67,8 @@ async def update_settings(
         settings.proxy_url = data.proxy_url
     if data.cookie_jar_enabled is not None:
         settings.cookie_jar_enabled = data.cookie_jar_enabled
+    if data.proxy_port is not None:
+        settings.proxy_port = data.proxy_port
     session.add(settings)
     session.commit()
     session.refresh(settings)
@@ -78,6 +81,7 @@ async def clear_all_data(session: Session = Depends(get_session)):
     try:
         # 清空各表
         for model in [
+            CookieJar,
             HistoryRecord,
             CaptureRecord,
             MockLog,

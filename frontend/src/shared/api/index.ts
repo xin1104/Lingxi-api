@@ -288,3 +288,57 @@ export async function clearAllData() {
     method: 'POST',
   })
 }
+
+// ===== Cookie Jar =====
+export async function getCookies() {
+  return fetchApi<any[]>('/cookie-jar')
+}
+
+export async function getCookieJarStatus() {
+  return fetchApi<{ enabled: boolean; count: number }>('/cookie-jar/status')
+}
+
+export async function deleteCookie(id: number) {
+  return fetchApi<void>(`/cookie-jar/${id}`, { method: 'DELETE' })
+}
+
+export async function clearCookies() {
+  return fetchApi<void>('/cookie-jar', { method: 'DELETE' })
+}
+
+// ===== HTTP 代理 =====
+export async function getProxyStatus() {
+  return fetchApi<import('@/shared/types').ProxyStatus>('/proxy/status')
+}
+
+export async function startProxy() {
+  return fetchApi<{ running: boolean; address: string }>('/proxy/start', { method: 'POST' })
+}
+
+export async function stopProxy() {
+  return fetchApi<void>('/proxy/stop', { method: 'POST' })
+}
+
+export async function getProxyLogs(params?: {
+  limit?: number; offset?: number; source?: string; method?: string;
+  host?: string; status_code?: number; keyword?: string; is_https_connect?: boolean;
+}) {
+  const searchParams = new URLSearchParams()
+  if (params?.limit) searchParams.set('limit', params.limit.toString())
+  if (params?.offset) searchParams.set('offset', params.offset.toString())
+  if (params?.source) searchParams.set('source', params.source)
+  if (params?.method) searchParams.set('method', params.method)
+  if (params?.host) searchParams.set('host', params.host)
+  if (params?.status_code) searchParams.set('status_code', params.status_code.toString())
+  if (params?.keyword) searchParams.set('keyword', params.keyword)
+  if (params?.is_https_connect !== undefined) searchParams.set('is_https_connect', params.is_https_connect.toString())
+
+  const query = searchParams.toString()
+  return fetchApi<{ logs: import('@/shared/types').ProxyLog[]; total: number }>(
+    `/proxy/logs${query ? `?${query}` : ''}`
+  )
+}
+
+export async function clearProxyLogs() {
+  return fetchApi<void>('/proxy/logs', { method: 'DELETE' })
+}
