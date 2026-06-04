@@ -34,11 +34,12 @@
 | 请求捕获 | 已完成 | 捕获本软件发出的所有请求 |
 | 应用设置 | 已完成 | 主题 / 超时 / 代理等 |
 | 数据备份 | 已完成 | 完整 JSON 导出 |
-| Pre Script 编辑 | 已完成 | Monaco Editor (javascript 模式) |
+| Pre Script 执行 | 已完成 | 发送前自动执行: setHeader/setEnv/setBody |
 | Tests 断言 | 已完成 | 安全 DSL: status/json/headers 断言 + 结果展示 |
+| Cookie Jar | 已完成 | 自动保存+携带 Cookie, 域名/path/过期匹配 |
 | Cookies 面板 | 已完成 | Set-Cookie 解析 + 属性展示 |
 | 图片响应预览 | 已完成 | image/png/jpeg/gif/webp/svg 预览 |
-| Monaco Editor | 已完成 | JSON / raw / Script 编辑器 |
+| Monaco Editor | 已完成 | JSON / raw / Script 编辑器 + 快捷键 |
 | HTTP 代理抓包 | TODO | 计划 v0.4 |
 
 ## 架构
@@ -280,7 +281,7 @@ npm run build
 ## 路线图
 
 - **v0.2** — Monaco Editor、Tests 断言、Cookies 面板、图片预览 (已完成)
-- **v0.3** — Pre Script 执行、WebSocket 调试
+- **v0.3** — Pre Script 执行、Cookie Jar、请求重放 (已完成)
 - **v0.4** — 基础 HTTP 代理抓包
 - **v1.0** — 桌面应用打包 (PyInstaller / Electron)
 

@@ -256,6 +256,7 @@ class AppSettingsUpdate(BaseModel):
     mock_port: Optional[int] = None
     proxy_type: Optional[str] = None
     proxy_url: Optional[str] = None
+    cookie_jar_enabled: Optional[bool] = None
 
 
 # ===== 脚本测试 =====

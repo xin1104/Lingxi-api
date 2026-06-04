@@ -20,6 +20,7 @@ from app.features.import_export.router import router as import_export_router
 from app.features.codegen.router import router as codegen_router
 from app.features.capture.router import router as capture_router
 from app.features.settings.router import router as settings_router
+from app.features.cookie_jar.router import router as cookie_jar_router
 from app.features.capture.router import add_capture_record
 
 # 前端 dist 路径（相对于 backend 目录）
@@ -92,6 +93,7 @@ app.include_router(import_export_router)
 app.include_router(codegen_router)
 app.include_router(capture_router)
 app.include_router(settings_router)
+app.include_router(cookie_jar_router)
 
 
 @app.middleware("http")

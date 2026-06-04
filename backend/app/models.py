@@ -5,6 +5,21 @@ from typing import Optional
 from sqlmodel import SQLModel, Field, Column, JSON
 
 
+class CookieJar(SQLModel, table=True):
+    """Cookie Jar 存储"""
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
+    value: str
+    domain: str = ""
+    path: str = "/"
+    expires: Optional[datetime] = None
+    max_age: Optional[int] = None
+    http_only: bool = False
+    secure: bool = False
+    same_site: str = ""
+    created_at: datetime = Field(default_factory=datetime.now)
+
+
 class Collection(SQLModel, table=True):
     """接口集合"""
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -124,3 +139,4 @@ class AppSettings(SQLModel, table=True):
     mock_port: int = 4567
     proxy_type: str = "none"  # none, system, custom
     proxy_url: str = ""
+    cookie_jar_enabled: bool = True

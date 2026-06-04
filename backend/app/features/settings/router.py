@@ -64,6 +64,8 @@ async def update_settings(
         settings.proxy_type = data.proxy_type
     if data.proxy_url is not None:
         settings.proxy_url = data.proxy_url
+    if data.cookie_jar_enabled is not None:
+        settings.cookie_jar_enabled = data.cookie_jar_enabled
     session.add(settings)
     session.commit()
     session.refresh(settings)
