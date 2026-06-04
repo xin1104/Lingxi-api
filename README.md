@@ -4,14 +4,14 @@
 
 [![CI](https://github.com/xin1104/Lingxi-api/actions/workflows/ci.yml/badge.svg)](https://github.com/xin1104/Lingxi-api/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/Python-3.11+-blue)](https://www.python.org/)
-[![Node.js](https://img.shields.io/badge/Node.js-18+-green)](https://nodejs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-22+-green)](https://nodejs.org/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 灵犀 API Client 是一个面向个人开发者的**开源中文 API 调试工具**，定位类似 Postman，但**不做云同步、不做团队协作、不做企业付费**。所有数据存储在本地 SQLite，完全离线可用。
 
 核心亮点：真实 HTTP 请求由 Python 后端使用 httpx 发起，**彻底绕过浏览器 CORS 限制**。
 
-**当前版本: v0.4.0**
+**当前版本: v1.0.0**
 
 ## 界面预览
 
@@ -21,39 +21,38 @@
 
 | 功能 | 状态 | 说明 |
 |------|------|------|
-| HTTP 请求发送 | ✅ 已完成 | GET/POST/PUT/PATCH/DELETE/HEAD/OPTIONS |
-| Query Params / Headers / Body | ✅ 已完成 | JSON / raw / form-data / urlencoded |
-| Auth 认证 | ✅ 已完成 | No Auth / Bearer / Basic / API Key |
-| 响应查看 | ✅ 已完成 | 状态码 / 耗时 / 大小 / Headers / Body / JSON 格式化 |
-| 接口集合 | ✅ 已完成 | 树形结构，支持文件夹 |
-| 环境变量 | ✅ 已完成 | 多环境 + `{{变量}}` 语法 + 内置变量 |
-| 请求历史 | ✅ 已完成 | 自动记录 / 搜索 / 筛选 / 恢复 / 重放 |
-| Mock 服务 | ✅ 已完成 | 路由管理 / 启动停止 / 日志查看 |
-| cURL 导入导出 | ✅ 已完成 | 支持常见 cURL 格式 |
-| Postman 导入 | ✅ 已完成 | Collection v2.1 基础版 |
-| OpenAPI 导入 | ✅ 已完成 | 3.0 基础版 |
-| 代码生成 | ✅ 已完成 | cURL / Python / JS / Node.js / Go |
-| 请求捕获 | ✅ 已完成 | 捕获本软件 + 代理发出的请求 |
-| 应用设置 | ✅ 已完成 | 主题 / 超时 / 代理端口等 |
-| 数据备份 | ✅ 已完成 | 完整 JSON 导出 |
-| Pre Script 执行 | ✅ 已完成 | 发送前执行: setHeader/setEnv/setParam/setBody/log |
-| Tests 断言 | ✅ 已完成 | 安全 DSL: pm.test/pm.assert 断言系统 |
-| Cookie Jar | ✅ 已完成 | 自动保存/携带 Cookie，domain/path/expires/secure 匹配 |
-| Cookies 面板 | ✅ 已完成 | Set-Cookie 解析 + 属性展示 |
-| 图片响应预览 | ✅ 已完成 | image/png/jpeg/gif/webp/svg 预览 |
-| Monaco Editor | ✅ 已完成 | JSON / raw / Script 编辑器 + 快捷键（Ctrl+Enter/Ctrl+S/Alt+Shift+F）+ 中文语言包 |
-| HTTP 代理抓包 | ✅ v0.4 新增 | 基础 HTTP 代理，支持 GET/POST/PUT/PATCH/DELETE |
-| HTTPS CONNECT 记录 | ✅ v0.4 新增 | 仅记录域名/端口，不解密内容 |
-| Toast 通知 | ✅ v0.4 新增 | 统一 Toast 系统（success/error/info/warning） |
-| 请求重放 | ✅ v0.4 新增 | 从历史/捕获恢复到工作台或立即重放 |
-| E2E 测试 | ✅ v0.4 新增 | Playwright E2E + GitHub Actions 手动触发 |
-| WebSocket 调试 | 🔜 TODO | 计划后续版本 |
-| GraphQL 调试 | 🔜 TODO | 计划后续版本 |
-| 桌面打包 | 🔜 TODO | 计划 v1.0 |
+| HTTP 请求发送 | ✅ | GET/POST/PUT/PATCH/DELETE/HEAD/OPTIONS |
+| Query Params / Headers / Body | ✅ | JSON / raw / form-data / urlencoded |
+| Auth 认证 | ✅ | No Auth / Bearer / Basic / API Key |
+| 响应查看 | ✅ | 状态码 / 耗时 / 大小 / Headers / Body / JSON 格式化 |
+| 接口集合 | ✅ | 树形结构，支持文件夹 |
+| 环境变量 | ✅ | 多环境 + `{{变量}}` 语法 + 内置变量 |
+| 请求历史 | ✅ | 自动记录 / 搜索 / 筛选 / 恢复 / 重放 |
+| Mock 服务 | ✅ | 路由管理 / 启动停止 / 延迟模拟 / 日志查看 |
+| cURL 导入导出 | ✅ | 支持常见 cURL 格式 |
+| Postman 导入 | ✅ | Collection v2.1 基础版 |
+| OpenAPI 导入 | ✅ | 3.0 基础版 |
+| 代码生成 | ✅ | cURL / Python / JS / Node.js / Go |
+| 请求捕获 | ✅ | 捕获本软件 + 代理发出的请求（SQLite 持久化）| |
+| 应用设置 | ✅ | 主题 / 超时 / 代理端口等 |
+| 数据备份 | ✅ | 完整 JSON 导出 |
+| Pre Script 执行 | ✅ | 发送前执行: setHeader/setEnv/setParam/setBody/log |
+| Tests 断言 | ✅ | 安全 DSL: pm.test/pm.assert 断言系统（7 种断言）| |
+| Cookie Jar | ✅ | 自动保存/携带 Cookie，domain/path/expires/secure 匹配 |
+| Cookies 面板 | ✅ | Set-Cookie 解析 + 属性展示 |
+| 响应视图增强 | ✅ | HTML iframe 安全预览 / 图片预览 / 二进制下载 / Headers+信息面板 |
+| Monaco Editor | ✅ | JSON / raw / Script 编辑器 + 快捷键 + 中文语言包 |
+| HTTP 代理抓包 | ✅ | 基础 HTTP 代理，支持 GET/POST/PUT/PATCH/DELETE |
+| HTTPS CONNECT 记录 | ✅ | 仅记录域名/端口，不解密内容 |
+| Toast 通知 | ✅ | 统一 Toast 系统（success/error/info/warning） |
+| 请求重放 | ✅ | 从历史/捕获恢复到工作台或立即重放 |
+| E2E 测试 | ✅ | Playwright E2E + GitHub Actions 手动触发 |
+| WebSocket 调试 | 🔜 后续 | — |
+| GraphQL 调试 | 🔜 后续 | — |
 
-## HTTP 代理抓包（v0.4 新增）
+## HTTP 代理抓包
 
-灵犀 API Client v0.4.0 支持基础 HTTP 代理抓包，可以将外部 HTTP 客户端的流量代理到本软件捕获。
+灵犀 API Client 支持基础 HTTP 代理抓包，可以将外部 HTTP 客户端的流量代理到本软件捕获。
 
 ### 启动代理
 
@@ -100,7 +99,7 @@ requests.get("http://example.com/api/data", proxies=proxies)
 - 记录详情：请求头、请求体预览、响应头、响应体预览
 - 复制 URL、复制 cURL、恢复到工作台
 
-## 请求重放（v0.4 增强）
+## 请求重放
 
 从历史记录或捕获记录中：
 - **恢复到工作台**：将请求配置加载到编辑器，可修改后发送
@@ -108,27 +107,60 @@ requests.get("http://example.com/api/data", proxies=proxies)
 - 重放成功后显示 Toast 通知
 - 重放产生新的历史记录
 
-## Toast 通知系统（v0.4 新增）
+## Tests 脚本系统（v0.5 新增）
 
-统一 Toast 组件，覆盖以下场景：
-- 设置保存成功/失败
-- Cookie Jar 启用/禁用/清空
-- 代理启动/停止成功/失败
-- 复制成功
-- 请求重放成功/失败
-- 清空数据成功/失败
+Tests 系统允许在请求完成后执行断言脚本，验证响应结果是否满足预期。
 
-支持 success / error / info / warning 四种类型，中文文案。
-3 秒自动消失，可手动关闭。
+**支持的断言 API：**
+- `pm.test(name, fn)` — 定义测试用例
+- `pm.assert(condition, message)` — 断言条件
+- `pm.response.to.haveStatus(code)` — 检查状态码
+- `pm.response.to.be.success` — 检查 2xx
+- `pm.response.to.be.json` — 检查 JSON 响应
+- `expect(value).toBe(expected)` — 精确匹配
+- `expect(value).toContain(substring)` — 包含匹配
+- `expect(value).toHaveStatus(code)` — 别名
+- `expect(value).toBeJson()` — 可解析为 JSON
+- `expect(value).toHaveHeader(name)` — 包含 Header
+- `expect(value).toBeLessThan(max)` — 数值比较
+- `pm.environment.get/set` — 环境变量读写
 
-使用方式：
-```tsx
-import { toast } from '@/shared/ui/Toast'
-toast.success('操作成功')
-toast.error('操作失败')
-toast.info('提示信息')
-toast.warning('警告信息')
-```
+**安全执行：** 使用 Function 构造器在受限作用域中执行，仅暴露测试 API，不暴露 window/document/fetch 等危险对象。
+
+## Pre Script 系统
+
+Pre Script 允许在发送请求前执行脚本，动态修改请求参数。
+
+**支持的 API：**
+- `pm.setHeader(name, value)` — 设置请求头
+- `pm.removeHeader(name)` — 删除请求头
+- `pm.setEnv(name, value)` — 设置环境变量
+- `pm.setParam(name, value)` — 设置参数
+- `pm.setBody(body)` — 设置请求体
+- `console.log` — 输出日志
+
+## 响应视图增强（v0.5 新增）
+
+- **HTML 预览**：iframe 沙盒隔离，安全渲染 HTML 响应
+- **图片预览**：直接渲染 image/png/jpeg/gif/webp/svg 响应
+- **二进制下载**：检测二进制响应（PDF/ZIP 等），提供文件下载按钮
+- **信息栏**：状态码、耗时、响应大小
+- **Headers 面板**：完整响应头展示
+- **Tests 面板**：显示脚本执行结果（通过/失败/总计）
+- **Cookies 面板**：Set-Cookie 解析与属性展示
+
+## Capture SQLite 持久化（v0.5 新增）
+
+请求捕获数据从内存数组迁移到 SQLite `CaptureRecord` 表，支持：
+- 持久化存储，重启不丢失
+- API 检索与清空
+- 记录详情查询
+
+## Mock 增强（v0.5 新增）
+
+- **延迟模拟**：MockRoute.delay 字段，支持模拟慢响应
+- **模板变量**：响应体支持 `{{$request.url}}` `{{$request.method}}` 模板
+- **日志面板**：前端 Mock 页面新增日志面板，显示匹配记录（方法/路径/时间）
 
 ## 架构
 
@@ -168,7 +200,7 @@ SQLite 数据库 (lingxi.db)
 | 状态管理 | Zustand |
 | 代码编辑器 | Monaco Editor |
 | 代码检查 | Ruff (Python) / tsc strict (TypeScript) |
-| 测试 | pytest (后端 66+) / Vitest (前端 71+) / Playwright (E2E) |
+| 测试 | pytest (后端 103+) / Vitest (前端 71+) / Playwright (E2E) |
 
 ## 目录结构
 
@@ -281,7 +313,7 @@ python3 scripts/check.py          # 基本检查
 python3 scripts/check.py --e2e    # 包含 E2E 测试
 ```
 
-## E2E 测试（v0.4 新增）
+## E2E 测试
 
 ### 本地运行
 
@@ -404,7 +436,7 @@ curl --proxy http://127.0.0.1:8899 http://httpbin.org/get
 ## 测试
 
 ```bash
-# 后端测试 (66 tests)
+# 后端测试 (103+ tests)
 cd backend
 .venv/bin/python -m pytest tests/ -v
 .venv/bin/python -m ruff check .
@@ -422,33 +454,39 @@ python3 scripts/e2e.py
 python3 scripts/check.py --e2e
 ```
 
-## Tests 安全说明
+## Tests / Pre Script 安全说明
 
-当前 Tests 系统使用 Function 构造器在受限作用域中执行脚本，仅暴露 `pm.test`/`pm.assert`/`pm.response`/`pm.request` API。**不暴露** window、document、localStorage、fetch、XMLHttpRequest 等危险对象。这是 Demo 级安全实现，仅供个人开发者日常 API 测试使用。
+Tests 和 Pre Script 系统使用 Function 构造器在受限作用域中执行脚本，仅暴露白名单 API：
 
-同样，Pre Script 系统也使用受限的 Function 构造器，仅暴露 `pm.setHeader`/`pm.removeHeader`/`pm.setEnv`/`pm.setParam`/`pm.setBody`/`console` API。
+**Tests 暴露：** `pm.test`, `pm.assert`, `pm.response`, `pm.request`, `expect`, `console`
+**Pre Script 暴露：** `pm.setHeader`, `pm.removeHeader`, `pm.setEnv`, `pm.setParam`, `pm.setBody`, `console`
+
+**不暴露：** window、document、localStorage、fetch、XMLHttpRequest 等危险对象。
+
+这是 Demo 级安全实现，仅供个人开发者日常 API 测试使用。
 
 ## 当前限制
 
-v0.4.0 已知限制：
+v1.0.0 已知限制：
 
 1. **HTTPS MITM 解密**：不支持，也不会实现
 2. **外部 HTTPS 内容解密**：HTTPS CONNECT 仅记录域名和端口
 3. **WebSocket 调试**：计划后续版本
 4. **GraphQL 调试**：计划后续版本
-5. **桌面端打包**：计划 v1.0
-6. **插件系统**：暂无计划
-7. **云同步**：不计划实现
-8. **团队空间**：不计划实现
-9. **E2E 测试**：需手动触发，非 CI 默认运行（支持 GitHub Actions 手动触发）
+5. **插件系统**：暂无计划
+6. **云同步**：不计划实现
+7. **团队空间**：不计划实现
 
-## 路线图
+## 版本历史
 
-- **v0.2** — Monaco Editor、Tests 断言、Cookies 面板、图片预览 (✅ 已完成)
-- **v0.3** — Pre Script 执行、Cookie Jar、请求重放 (✅ 已完成)
-- **v0.4** — 基础 HTTP 代理抓包、E2E CI、Toast 通知、请求重放增强 (✅ 已完成)
-- **v0.5** — 性能优化、代理增强、文档完善
-- **v1.0** — 桌面应用打包 (PyInstaller / Electron)
+| 版本 | 亮点 |
+|:----:|------|
+| **v1.0.0** | 打磨轮：UI 交互打磨、空状态、表单验证、跨平台兼容、端口占用检测、全量测试通过 |
+| **v0.5.0** | Tests 脚本系统、Pre Script 执行器、响应 HTML 预览 + 二进制下载、Mock 延迟/模板变量/Capture SQLite 持久化 |
+| **v0.4.0** | HTTP 代理抓包、E2E CI、Toast 通知、请求重放增强 |
+| **v0.3.0** | Pre Script 执行、Cookie Jar、请求重放 |
+| **v0.2.0** | Monaco Editor、Tests 断言、Cookies 面板、图片预览 |
+| **v0.1.0** | 基础 HTTP 请求发送、集合管理、环境变量、Mock、cURL/Postman/OpenAPI 导入、代码生成 |
 
 ## 常见问题
 
