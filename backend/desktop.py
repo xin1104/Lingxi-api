@@ -90,7 +90,7 @@ def run_desktop():
         sys.exit(1)
 
     # ── 后端线程 ──
-    log.info(f"● 灵犀 API Client v1.1.0")
+    log.info("● 灵犀 API Client v1.1.0")
     log.info(f"● 模式: {'🔒 桌面' if FROZEN else '🔧 开发'}")
     log.info(f"● 数据目录: {DATA_DIR}")
 
@@ -104,7 +104,7 @@ def run_desktop():
 
     url = f"http://{BACKEND_HOST}:{BACKEND_PORT}"
     log.info(f"● 服务地址: {url}")
-    log.info(f"● 启动桌面窗口...")
+    log.info("● 启动桌面窗口...")
 
     # ── 加载图标路径 ──
     icon_path = None
